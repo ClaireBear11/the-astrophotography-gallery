@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Astrophotography Gallery — Claire Lee</title>
+<style>
+/* ============================================================
+   EDIT HERE: colors / fonts
+   ============================================================ */
+:root{
+  --bg:#0b0d12;          /* page background */
+  --bg-soft:#12151c;     /* frame background before image loads */
+  --line:#1e222c;        /* divider lines */
+  --ink:#eceadf;         /* bright headings */
+  --body:#c9c6bb;        /* body / caption text */
+  --muted:#8a8f9c;       /* faint text (italic notes) */
+  --data:#9a8c6a;        /* gold data labels (object name, gear) */
+  --accent:#c98a5a;      /* warm accent */
+  --serif:Georgia,'Times New Roman',serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'SF Mono',ui-monospace,'Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--body);
+  font-family:var(--sans);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block;width:100%;height:100%;object-fit:cover;}
+
+/* ---------- HERO ---------- */
+.hero{
+  min-height:70vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:6rem 2rem 4rem;
+  max-width:1100px;margin:0 auto;
+  border-bottom:1px solid var(--line);
+}
+.hero .eyebrow{
+  color:var(--data);font-size:.72rem;letter-spacing:.28em;
+  text-transform:uppercase;margin-bottom:1.4rem;
+}
+.hero h1{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(2.6rem,7vw,5rem);
+  color:var(--ink);line-height:1.05;letter-spacing:-.01em;
+}
+.hero .sub{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(1rem,2.4vw,1.4rem);
+  color:var(--muted);margin-top:1.6rem;max-width:40ch;
+}
+.hero .byline{
+  margin-top:2.4rem;color:var(--body);font-size:.85rem;
+  letter-spacing:.05em;
+}
+
+/* ---------- GALLERY ---------- */
+.gallery{max-width:1100px;margin:0 auto;padding:4rem 2rem 6rem;}
+
+.plate{
+  margin-bottom:6rem;
+  opacity:0;transform:translateY(28px);
+  transition:opacity .9s ease,transform .9s ease;
+}
+.plate.in{opacity:1;transform:none;}
+
+/* photo frame */
+.frame{
+  border-radius:10px;overflow:hidden;background:var(--bg-soft);
+  cursor:zoom-in;position:relative;
+}
+.frame::after{ /* subtle inner border */
+  content:"";position:absolute;inset:0;border-radius:10px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);pointer-events:none;
+}
+.frame img{transition:transform 1.2s cubic-bezier(.2,.6,.2,1);}
+.frame:hover img{transform:scale(1.04);}   /* slow zoom on hover */
+
+/* caption */
+.cap{margin-top:1.1rem;}
+.cap .obj{
+  color:var(--data);font-size:.72rem;letter-spacing:.16em;
+  text-transform:uppercase;margin-bottom:.5rem;
+}
+.cap .obj .gear{color:var(--muted);text-transform:none;letter-spacing:.04em;}
+.cap .text{
+  font-family:var(--serif);color:var(--body);
+  font-size:1.02rem;line-height:1.65;max-width:70ch;
+}
+.cap .note{
+  display:block;color:var(--muted);font-style:italic;
+  font-size:.95rem;margin-top:.5rem;
+}
+
+/* layout variants: wide (big landscape) / tall (portrait) / duo (2-up) */
+.wide .frame{aspect-ratio:16/9;}
+.tall .frame{aspect-ratio:4/5;}
+
+.duo{
+  display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;
+  margin-bottom:6rem;
+}
+.duo .plate{margin-bottom:0;}
+.duo .frame{aspect-ratio:1;}
+.duo .cap .text{font-size:.98rem;}
+
+/* ---------- LIGHTBOX (click a photo to enlarge) ---------- */
+.lb{
+  position:fixed;inset:0;background:rgba(4,5,8,.95);
+  display:none;align-items:center;justify-content:center;
+  z-index:100;padding:2rem;cursor:zoom-out;
+}
+.lb.open{display:flex;}
+.lb img{
+  max-width:92vw;max-height:82vh;width:auto;height:auto;
+  object-fit:contain;border-radius:6px;
+}
+.lb .lb-cap{
+  position:absolute;bottom:1.6rem;left:0;right:0;text-align:center;
+  color:var(--muted);font-family:var(--serif);font-style:italic;
+  font-size:.9rem;padding:0 2rem;
+}
+.lb .lb-close{
+  position:absolute;top:1.4rem;right:1.8rem;color:var(--muted);
+  font-size:1.8rem;background:none;border:none;cursor:pointer;
+  line-height:1;
+}
+.lb .lb-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);
+  font-size:2.4rem;cursor:pointer;padding:1rem;user-select:none;
+}
+.lb .lb-prev{left:.5rem;}
+.lb .lb-next{right:.5rem;}
+.lb-nav:hover,.lb-close:hover{color:var(--ink);}
+
+/* ---------- FOOTER ---------- */
+.foot{
+  max-width:1100px;margin:0 auto;padding:3rem 2rem 5rem;
+  border-top:1px solid var(--line);text-align:center;
+  color:var(--muted);font-size:.8rem;letter-spacing:.05em;
+}
+
+/* ---------- RESPONSIVE (phone) ---------- */
+@media(max-width:720px){
+  .hero{padding:4.5rem 1.4rem 3rem;min-height:60vh;}
+  .gallery{padding:3rem 1.4rem 4rem;}
+  .plate{margin-bottom:4rem;}
+  .duo{grid-template-columns:1fr;gap:4rem;margin-bottom:4rem;}  /* 2-up becomes 1 column */
+  .lb .lb-nav{font-size:1.8rem;padding:.5rem;}
+}
+@media(prefers-reduced-motion:reduce){
+  .plate{opacity:1;transform:none;transition:none;}
+  .frame img{transition:none;}
+  html{scroll-behavior:auto;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO — edit the title / subtitle here
+     ============================================================ -->
+<header class="hero">
+  <p class="eyebrow">A photographic essay</p>
+  <h1>The Astrophotography Gallery</h1>
+  <p class="sub">Three years of chasing faint light from a New England driveway.</p>
+  <p class="byline">Astrophotography by Claire Lee</p>
+</header>
+
+<!-- the gallery is filled automatically by the JavaScript below -->
+<main class="gallery" id="gallery"></main>
+
+<footer class="foot">
+  <p>All images captured and processed by Claire Lee · <span id="year"></span></p>
+</footer>
+
+<!-- lightbox -->
+<div class="lb" id="lb">
+  <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <img id="lbImg" src="" alt="">
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">&#8250;</button>
+  <p class="lb-cap" id="lbCap"></p>
+</div>
+
+<script>
+/* ============================================================
+   ★ ADD YOUR PHOTOS HERE ★
+   One { } block per photo. They appear in this order.
+   - src   : image file path (e.g. "images/jupiter.jpg"). Leave "" to show a placeholder gradient.
+   - obj   : object name (shown as the uppercase gold label)
+   - gear  : capture gear / settings (e.g. "Seestar S50")
+   - text  : the caption / description (main body text)
+   - note  : optional italic personal line — leave "" to skip
+   - layout: "wide" (big landscape) / "tall" (portrait) / "duo" (two side by side)
+             NOTE: "duo" pairs up two-in-a-row, so keep duos in even groups.
+   ============================================================ */
+const PHOTOS = [
+  {
+    src:"images/andromeda.jpg", obj:"Andromeda Galaxy · M31",
+    gear:"Seestar S50",
+    text:"The Andromeda Galaxy (Messier 31) is a barred spiral galaxy about 2.5 million light-years away — the most distant object visible to the naked eye. Spanning roughly 152,000 light-years, it is the largest galaxy in our Local Group and contains an estimated one trillion stars.",
+    note:"", layout:"wide"
+  },
+  {
+    src:"images/hercules-m13.jpg", obj:"Hercules Globular Cluster · M13",
+    gear:"Seestar S50",
+    text:"The Hercules Globular Cluster (Messier 13) is a dense sphere of several hundred thousand stars about 22,000 light-years away, measuring roughly 145 light-years across. At 11.5 to 13 billion years old, it is nearly as old as the universe. Edmond Halley discovered it in 1714, and it can be glimpsed with the naked eye under dark skies.",
+    note:"", layout:"duo"
+  },
+  {
+    src:"images/north-america-nebula.jpg", obj:"North America Nebula · NGC 7000",
+    gear:"Seestar S50",
+    text:"The North America Nebula (NGC 7000) is an emission nebula in Cygnus, about 2,590 light-years away, named for its resemblance to the continent. A massive region of ionized hydrogen, it glows red as light from hidden stars energizes the gas, spanning several times the width of the full moon.",
+    note:"", layout:"duo"
+  }
+];
+
+/* ============================================================
+   You don't need to touch anything below — just edit PHOTOS above.
+   ============================================================ */
+const gallery = document.getElementById('gallery');
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* placeholder gradients shown when a photo has no src yet */
+const PLACEHOLDER = [
+  'radial-gradient(circle at 40% 38%,#c97b4a,#7a3a1f 32%,#14100c 78%)',
+  'radial-gradient(ellipse at 50% 50%,#d4a94a,#8a6a2a 28%,#1a1610 72%)',
+  'radial-gradient(circle at 55% 45%,#b23b3b,#6a1f2a 32%,#140a10 80%)',
+  'radial-gradient(ellipse at 45% 40%,#e8e4d8,#b8b0a0 18%,#2a2620 68%)',
+  'radial-gradient(circle at 50% 45%,#6a7bb0,#2a3560 40%,#0d1020 82%)'
+];
+
+function frameHTML(p,i){
+  const inner = p.src
+    ? `<img src="${p.src}" alt="${p.obj}">`
+    : `<div style="width:100%;height:100%;background:${PLACEHOLDER[i%PLACEHOLDER.length]}"></div>`;
+  return `<div class="frame" data-i="${i}">${inner}</div>`;
+}
+function capHTML(p){
+  const gear = p.gear ? ` <span class="gear">· ${p.gear}</span>` : '';
+  const note = p.note ? `<span class="note">${p.note}</span>` : '';
+  return `<div class="cap"><p class="obj">${p.obj}${gear}</p>`+
+         `<p class="text">${p.text}${note}</p></div>`;
+}
+
+/* pair up "duo" photos two at a time; everything else is a single plate */
+let html='', i=0;
+while(i<PHOTOS.length){
+  const p=PHOTOS[i];
+  if(p.layout==='duo' && PHOTOS[i+1] && PHOTOS[i+1].layout==='duo'){
+    html+=`<div class="duo">`+
+      `<div class="plate">${frameHTML(p,i)}${capHTML(p)}</div>`+
+      `<div class="plate">${frameHTML(PHOTOS[i+1],i+1)}${capHTML(PHOTOS[i+1])}</div>`+
+      `</div>`;
+    i+=2;
+  }else{
+    const cls = p.layout==='tall' ? 'tall' : 'wide';
+    html+=`<div class="plate ${cls}">${frameHTML(p,i)}${capHTML(p)}</div>`;
+    i++;
+  }
+}
+gallery.innerHTML=html;
+
+/* fade each plate in as it scrolls into view */
+const io=new IntersectionObserver((es)=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.12});
+document.querySelectorAll('.plate').forEach(el=>io.observe(el));
+
+/* lightbox */
+const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),
+      lbCap=document.getElementById('lbCap');
+let cur=0;
+function openLB(i){
+  cur=i;const p=PHOTOS[i];
+  if(!p.src){return;} /* don't enlarge a placeholder */
+  lbImg.src=p.src;lbImg.alt=p.obj;
+  lbCap.textContent=p.obj+(p.gear?'  ·  '+p.gear:'');
+  lb.classList.add('open');
+}
+function closeLB(){lb.classList.remove('open');lbImg.src='';}
+function step(d){
+  let n=cur;
+  for(let k=0;k<PHOTOS.length;k++){
+    n=(n+d+PHOTOS.length)%PHOTOS.length;
+    if(PHOTOS[n].src){openLB(n);return;}
+  }
+}
+gallery.addEventListener('click',e=>{
+  const f=e.target.closest('.frame');if(f)openLB(+f.dataset.i);
+});
+document.getElementById('lbClose').addEventListener('click',closeLB);
+document.getElementById('lbPrev').addEventListener('click',e=>{e.stopPropagation();step(-1);});
+document.getElementById('lbNext').addEventListener('click',e=>{e.stopPropagation();step(1);});
+lb.addEventListener('click',e=>{if(e.target===lb)closeLB();});
+document.addEventListener('keydown',e=>{
+  if(!lb.classList.contains('open'))return;
+  if(e.key==='Escape')closeLB();
+  if(e.key==='ArrowLeft')step(-1);
+  if(e.key==='ArrowRight')step(1);
+});
+</script>
+</body>
+</html>
