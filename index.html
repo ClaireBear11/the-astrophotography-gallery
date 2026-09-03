@@ -34,29 +34,75 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 
 /* ---------- HERO ---------- */
 .hero{
+  position:relative;            /* positioning context for the starfield */
   min-height:70vh;
-  display:flex;flex-direction:column;justify-content:center;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;
   padding:6rem 2rem 4rem;
-  max-width:1100px;margin:0 auto;
-  border-bottom:1px solid var(--line);
+  margin:0 auto;
+  overflow:hidden;              /* keep the starfield + shooting stars inside */
 }
+/* starfield sits behind the text, full-bleed across the whole hero */
+#stars{
+  position:absolute;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;
+}
+/* all hero text sits above the starfield, constrained to a centered column */
+.hero > *:not(#stars){position:relative;z-index:1;max-width:1100px;}
+
+/* text fade-in on load: each line rises + fades, staggered */
+.hero .eyebrow,.hero h1,.hero .sub,.hero .byline{
+  opacity:0;transform:translateY(18px);
+  animation:heroIn .9s cubic-bezier(.2,.6,.2,1) forwards;
+}
+.hero h1{animation-delay:.15s;}
+.hero .sub{animation-delay:.40s;}
+.hero .byline{animation-delay:.65s;}
+.hero .hero-actions{animation-delay:.90s;}
+@keyframes heroIn{to{opacity:1;transform:none;}}
+
+/* hero buttons */
+.hero-actions{
+  display:flex;gap:1rem;margin-top:2.6rem;flex-wrap:wrap;justify-content:center;
+  opacity:0;transform:translateY(18px);
+  animation:heroIn .9s cubic-bezier(.2,.6,.2,1) forwards;
+}
+.btn{
+  display:inline-flex;align-items:center;
+  padding:.7rem 1.5rem;
+  font-family:var(--sans);font-size:.85rem;letter-spacing:.14em;
+  text-transform:uppercase;text-decoration:none;
+  color:var(--data);
+  border:1px solid var(--data);border-radius:2px;
+  background:transparent;cursor:pointer;
+  transition:background .35s ease,color .35s ease,box-shadow .35s ease;
+}
+.btn:hover,.btn:focus-visible{
+  background:rgba(154,140,106,.14);      /* faint gold fill */
+  color:var(--ink);
+  box-shadow:0 0 22px rgba(154,140,106,.22);
+  outline:none;
+}
+
 .hero .eyebrow{
-  color:var(--data);font-size:.72rem;letter-spacing:.28em;
+  color:var(--data);font-size:.95rem;letter-spacing:.28em;
   text-transform:uppercase;margin-bottom:1.4rem;
 }
 .hero h1{
   font-family:var(--serif);font-weight:400;
-  font-size:clamp(2.6rem,7vw,5rem);
+  font-size:clamp(1.4rem,6.2vw,5rem);
   color:var(--ink);line-height:1.05;letter-spacing:-.01em;
+  white-space:nowrap;      /* keep title on ONE line */
 }
 .hero .sub{
   font-family:var(--serif);font-style:italic;
-  font-size:clamp(1rem,2.4vw,1.4rem);
-  color:var(--muted);margin-top:1.6rem;max-width:40ch;
+  font-size:clamp(.75rem,2.7vw,1.4rem);
+  color:var(--muted);margin-top:2.6rem;
+  white-space:nowrap;      /* keep subtitle on ONE line */
 }
 .hero .byline{
-  margin-top:2.4rem;color:var(--body);font-size:.85rem;
-  letter-spacing:.05em;
+  margin-top:1.8rem;color:var(--data);font-size:1rem;
+  letter-spacing:.18em;text-transform:uppercase;
 }
 
 /* ---------- GALLERY ---------- */
@@ -64,10 +110,9 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 
 .plate{
   margin-bottom:6rem;
-  opacity:0;transform:translateY(28px);
-  transition:opacity .9s ease,transform .9s ease;
+  /* opacity + drift are set live by JavaScript as you scroll */
+  will-change:opacity,transform;
 }
-.plate.in{opacity:1;transform:none;}
 
 /* photo frame */
 .frame{
@@ -108,6 +153,36 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .duo .plate{margin-bottom:0;}
 .duo .frame{aspect-ratio:1;}
 .duo .cap .text{font-size:.98rem;}
+
+/* compare: header + full-width caption, then two labeled photos side by side */
+.compare{margin-bottom:6rem;}
+.compare-title{
+  font-family:var(--serif);font-weight:400;
+  color:var(--data);                       /* gold header */
+  font-size:clamp(1.5rem,3vw,2.2rem);
+  text-align:left;margin-bottom:1rem;letter-spacing:.01em;
+}
+.compare .shared-cap{
+  font-family:var(--serif);color:var(--body);
+  font-size:1.05rem;line-height:1.7;
+  text-align:left;                         /* full width, no early wrap */
+  margin-bottom:2.2rem;
+}
+.compare .pair{
+  display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;
+}
+.compare .item .frame{aspect-ratio:1;}
+.compare .meta{
+  margin-top:.9rem;
+  color:var(--data);font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase;line-height:1.7;text-align:left;
+}
+.compare .meta .row{display:block;}
+.compare .meta .k{color:var(--data);}          /* label like SCOPE / DATE */
+.compare .meta .v{color:var(--muted);text-transform:none;letter-spacing:.03em;}
+@media(max-width:600px){
+  .compare .pair{grid-template-columns:1fr;gap:2rem;}
+}
 
 /* ---------- LIGHTBOX (click a photo to enlarge) ---------- */
 .lb{
@@ -155,7 +230,7 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
   .lb .lb-nav{font-size:1.8rem;padding:.5rem;}
 }
 @media(prefers-reduced-motion:reduce){
-  .plate{opacity:1;transform:none;transition:none;}
+  .plate{opacity:1 !important;transform:none !important;}
   .frame img{transition:none;}
   html{scroll-behavior:auto;}
 }
@@ -167,10 +242,14 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
      HERO — edit the title / subtitle here
      ============================================================ -->
 <header class="hero">
-  <p class="eyebrow">A photographic essay</p>
+  <canvas id="stars" aria-hidden="true"></canvas>
   <h1>The Astrophotography Gallery</h1>
-  <p class="sub">Three years of chasing faint light from a New England driveway.</p>
+  <p class="sub">Several years of chasing faint light from a New England driveway.</p>
   <p class="byline">Astrophotography by Claire Lee</p>
+  <div class="hero-actions">
+    <a class="btn" href="astronomer.html">The Astronomer</a>
+    <a class="btn" href="telescope.html">The Telescope</a>
+  </div>
 </header>
 
 <!-- the gallery is filled automatically by the JavaScript below -->
@@ -200,13 +279,24 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
    - note  : optional italic personal line — leave "" to skip
    - layout: "wide" (big landscape) / "tall" (portrait) / "duo" (two side by side)
              NOTE: "duo" pairs up two-in-a-row, so keep duos in even groups.
+
+   SPECIAL "compare" layout — two photos side by side (e.g. first vs latest),
+   each with its own object/scope/date label, sharing ONE caption below:
+   {
+     layout:"compare",
+     left:  { src:"images/old.jpg", obj:"Andromeda · M31", scope:"Seestar S50", date:"2023" },
+     right: { src:"images/new.jpg", obj:"Andromeda · M31", scope:"Seestar S50", date:"2026" },
+     text:"One shared caption for the pair."
+   }
    ============================================================ */
 const PHOTOS = [
+  /* --- Growth pairing: first vs most recent --- */
   {
-    src:"images/andromeda.jpg", obj:"Andromeda Galaxy · M31",
-    gear:"Seestar S50",
-    text:"The Andromeda Galaxy (Messier 31) is a barred spiral galaxy about 2.5 million light-years away — the most distant object visible to the naked eye. Spanning roughly 152,000 light-years, it is the largest galaxy in our Local Group and contains an estimated one trillion stars.",
-    note:"", layout:"wide"
+    layout:"compare",
+    title:"Andromeda Galaxy",
+    left:  { src:"images/andromeda-first.png", obj:"Andromeda Galaxy · M31", scope:"Seestar S50", date:"Add date" },
+    right: { src:"images/andromeda-recent.jpg", obj:"Andromeda Galaxy · M31", scope:"Seestar S50", date:"Add date" },
+    text:"The Andromeda Galaxy (Messier 31) is a barred spiral galaxy about 2.5 million light-years away — the most distant object visible to the naked eye. Spanning roughly 152,000 light-years, it is the largest galaxy in our Local Group and contains an estimated one trillion stars. These two frames, captured years apart, show how my imaging has grown over time."
   },
   {
     src:"images/hercules-m13.jpg", obj:"Hercules Globular Cluster · M13",
@@ -219,6 +309,53 @@ const PHOTOS = [
     gear:"Seestar S50",
     text:"The North America Nebula (NGC 7000) is an emission nebula in Cygnus, about 2,590 light-years away, named for its resemblance to the continent. A massive region of ionized hydrogen, it glows red as light from hidden stars energizes the gas, spanning several times the width of the full moon.",
     note:"", layout:"duo"
+  },
+
+  /* ---- EMPTY SLOTS — fill these in as you capture more ----
+     Leave src:"" to show a placeholder gradient.
+     When ready: drop the image in images/, put its path in src,
+     write the obj / gear / text, and you're done.               */
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"wide"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"duo"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"duo"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"wide"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"duo"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"duo"
+  },
+  {
+    src:"", obj:"Object name",
+    gear:"Seestar S50",
+    text:"Caption goes here.",
+    note:"", layout:"tall"
   }
 ];
 
@@ -250,11 +387,36 @@ function capHTML(p){
          `<p class="text">${p.text}${note}</p></div>`;
 }
 
-/* pair up "duo" photos two at a time; everything else is a single plate */
+/* one side of a compare pair: image + a small object/scope/date label */
+function compareItemHTML(side,i,ph){
+  const alt = [side.obj, side.scope, side.date].filter(Boolean).join(' · ');
+  const inner = side.src
+    ? `<img src="${side.src}" alt="${alt}">`
+    : `<div style="width:100%;height:100%;background:${PLACEHOLDER[ph%PLACEHOLDER.length]}"></div>`;
+  const meta =
+    `<div class="meta">`+
+      (side.obj  ? `<span class="row"><span class="v">${side.obj}</span></span>`   : ``)+
+      (side.scope? `<span class="row"><span class="k">Scope</span> <span class="v">${side.scope}</span></span>` : ``)+
+      (side.date ? `<span class="row"><span class="k">Date</span> <span class="v">${side.date}</span></span>`   : ``)+
+    `</div>`;
+  return `<div class="item"><div class="frame" data-i="${i}">${inner}</div>${meta}</div>`;
+}
+
+/* pair up "duo" photos two at a time; render compare specially; else single plate */
 let html='', i=0;
 while(i<PHOTOS.length){
   const p=PHOTOS[i];
-  if(p.layout==='duo' && PHOTOS[i+1] && PHOTOS[i+1].layout==='duo'){
+  if(p.layout==='compare'){
+    html+=`<div class="plate compare">`+
+      (p.title ? `<h2 class="compare-title">${p.title}</h2>` : ``)+
+      `<p class="shared-cap">${p.text||''}</p>`+
+      `<div class="pair">`+
+        compareItemHTML(p.left, i, i)+
+        compareItemHTML(p.right, i, i+1)+
+      `</div>`+
+      `</div>`;
+    i++;
+  }else if(p.layout==='duo' && PHOTOS[i+1] && PHOTOS[i+1].layout==='duo'){
     html+=`<div class="duo">`+
       `<div class="plate">${frameHTML(p,i)}${capHTML(p)}</div>`+
       `<div class="plate">${frameHTML(PHOTOS[i+1],i+1)}${capHTML(PHOTOS[i+1])}</div>`+
@@ -268,33 +430,80 @@ while(i<PHOTOS.length){
 }
 gallery.innerHTML=html;
 
-/* fade each plate in as it scrolls into view */
-const io=new IntersectionObserver((es)=>{
-  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
-},{threshold:.12});
-document.querySelectorAll('.plate').forEach(el=>io.observe(el));
+/* ---- scroll-driven fade + drift (both directions) ----
+   For each plate we look at where its center sits in the viewport.
+   - Centered in the middle band  -> fully visible, no drift
+   - Approaching from the bottom   -> faded, shifted DOWN (rises up as it enters)
+   - Leaving past the top          -> faded, shifted UP  (sinks away as it exits)
+*/
+const plates = Array.from(document.querySelectorAll('.plate'));
+const DRIFT = 60;   // how far (px) items drift in/out. bigger = more movement
+const BAND  = 0.6;  // fraction of screen height that stays fully visible (center band)
 
-/* lightbox */
+/* respect reduced-motion: skip the scroll animation entirely */
+const REDUCE = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+function updateScroll(){
+  if(REDUCE) return;
+  const vh = window.innerHeight;
+  for(const el of plates){
+    const r = el.getBoundingClientRect();
+    const center = r.top + r.height/2;        // plate's center, relative to viewport
+    const fromMid = (center - vh/2) / (vh/2); // -1 = at top edge, 0 = middle, +1 = at bottom edge
+
+    // within the center band -> fully shown
+    const t = Math.max(-1, Math.min(1, fromMid));
+    const edge = Math.max(0, (Math.abs(t) - (1 - BAND)) / BAND); // 0 in band, ramps to 1 at edges
+
+    const opacity = 1 - edge;                 // fade out toward both edges
+    const drift = t * edge * DRIFT;           // +down when entering (bottom), -up when leaving (top)
+    el.style.opacity = opacity.toFixed(3);
+    el.style.transform = `translateY(${drift.toFixed(1)}px)`;
+  }
+}
+
+/* run on scroll/resize, throttled with requestAnimationFrame for smoothness */
+let ticking=false;
+function onScroll(){
+  if(!ticking){ requestAnimationFrame(()=>{updateScroll();ticking=false;}); ticking=true; }
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('resize',onScroll);
+window.addEventListener('load',updateScroll);
+updateScroll();  // set initial state right away
+
+/* lightbox — works off the actual <img>s on the page, so it supports
+   regular photos, duos, and compare pairs alike */
 const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),
       lbCap=document.getElementById('lbCap');
-let cur=0;
-function openLB(i){
-  cur=i;const p=PHOTOS[i];
-  if(!p.src){return;} /* don't enlarge a placeholder */
-  lbImg.src=p.src;lbImg.alt=p.obj;
-  lbCap.textContent=p.obj+(p.gear?'  ·  '+p.gear:'');
+let lbList=[], cur=0;
+
+function collectImages(){
+  // every real image inside a frame, in visual order
+  lbList = Array.from(document.querySelectorAll('.frame img'));
+}
+function openByEl(imgEl){
+  collectImages();
+  const idx = lbList.indexOf(imgEl);
+  if(idx<0) return;
+  showLB(idx);
+}
+function showLB(idx){
+  cur=idx;
+  const img=lbList[idx];
+  lbImg.src=img.src;lbImg.alt=img.alt||'';
+  lbCap.textContent=img.alt||'';
   lb.classList.add('open');
 }
 function closeLB(){lb.classList.remove('open');lbImg.src='';}
 function step(d){
-  let n=cur;
-  for(let k=0;k<PHOTOS.length;k++){
-    n=(n+d+PHOTOS.length)%PHOTOS.length;
-    if(PHOTOS[n].src){openLB(n);return;}
-  }
+  if(!lbList.length) return;
+  cur=(cur+d+lbList.length)%lbList.length;
+  showLB(cur);
 }
 gallery.addEventListener('click',e=>{
-  const f=e.target.closest('.frame');if(f)openLB(+f.dataset.i);
+  const img=e.target.closest('.frame')?.querySelector('img');
+  if(img) openByEl(img);
 });
 document.getElementById('lbClose').addEventListener('click',closeLB);
 document.getElementById('lbPrev').addEventListener('click',e=>{e.stopPropagation();step(-1);});
@@ -306,6 +515,101 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft')step(-1);
   if(e.key==='ArrowRight')step(1);
 });
+
+/* ============================================================
+   HERO STARFIELD — drifting + twinkling stars, occasional shooting star
+   Tune the numbers in the CONFIG block to change the feel.
+   ============================================================ */
+(function(){
+  if(REDUCE) return;                       // respect reduced-motion: no starfield
+  const canvas = document.getElementById('stars');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const hero = document.querySelector('.hero');
+
+  /* ---- CONFIG (safe to tweak) ---- */
+  const STAR_DENSITY = 0.00022;  // stars per pixel — higher = more stars
+  const DRIFT_X = 0.12;          // sideways drift speed (px/frame). +right, -left
+  const DRIFT_Y = 0.04;          // downward drift speed
+  const TWINKLE = 0.5;           // how much brightness pulses (0–1)
+  const SHOOT_MIN = 6000;        // min ms between shooting stars
+  const SHOOT_MAX = 14000;       // max ms between shooting stars
+
+  let W, H, stars=[], shooters=[];
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+
+  function resize(){
+    W = hero.clientWidth; H = hero.clientHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const count = Math.round(W*H*STAR_DENSITY);
+    stars = [];
+    for(let i=0;i<count;i++){
+      stars.push({
+        x:Math.random()*W, y:Math.random()*H,
+        r:Math.random()*1.2+0.3,                 // radius
+        base:Math.random()*0.5+0.35,             // base brightness
+        phase:Math.random()*Math.PI*2,           // twinkle offset
+        speed:Math.random()*0.8+0.4              // twinkle speed
+      });
+    }
+  }
+
+  function spawnShooter(){
+    // start somewhere in the upper-left area, streak down-right
+    const startX = Math.random()*W*0.6;
+    const startY = Math.random()*H*0.4;
+    const ang = Math.PI/5 + Math.random()*0.25;  // ~36–50° downward
+    const speed = 6 + Math.random()*3;
+    shooters.push({
+      x:startX, y:startY,
+      vx:Math.cos(ang)*speed, vy:Math.sin(ang)*speed,
+      life:0, max:60 + Math.random()*30, len:120+Math.random()*80
+    });
+    setTimeout(spawnShooter, SHOOT_MIN + Math.random()*(SHOOT_MAX-SHOOT_MIN));
+  }
+
+  let t=0;
+  function frame(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+
+    /* stars */
+    for(const s of stars){
+      s.x += DRIFT_X; s.y += DRIFT_Y;
+      if(s.x>W) s.x=0; if(s.x<0) s.x=W;
+      if(s.y>H) s.y=0;
+      const tw = s.base + Math.sin(t*0.02*s.speed + s.phase)*TWINKLE*0.35;
+      const a = Math.max(0, Math.min(1, tw));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(235,238,245,${a})`;
+      ctx.fill();
+    }
+
+    /* shooting stars */
+    for(let i=shooters.length-1;i>=0;i--){
+      const m = shooters[i];
+      m.x += m.vx; m.y += m.vy; m.life++;
+      const fade = 1 - m.life/m.max;
+      if(fade<=0 || m.x>W+100 || m.y>H+100){ shooters.splice(i,1); continue; }
+      const tailX = m.x - m.vx*(m.len/6);
+      const tailY = m.y - m.vy*(m.len/6);
+      const grad = ctx.createLinearGradient(m.x,m.y,tailX,tailY);
+      grad.addColorStop(0, `rgba(255,250,240,${fade})`);
+      grad.addColorStop(1, `rgba(255,250,240,0)`);
+      ctx.strokeStyle = grad; ctx.lineWidth = 1.6; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(tailX,tailY); ctx.stroke();
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+  setTimeout(spawnShooter, 2500);   // first shooting star ~2.5s after load
+})();
 </script>
 </body>
 </html>
